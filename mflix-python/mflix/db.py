@@ -45,17 +45,16 @@ def get_db():
 
         db = g._database = MongoClient(
         MFLIX_DB_URI,
-        # TODO: Connection Pooling
-        # Set the maximum connection pool size to 50 active connections.
+        maxPoolSize = 50,
         # TODO: Timeouts
         # Set the write timeout limit to 2500 milliseconds.
+        #timeoutMS = 2500
         )[MFLIX_DB_NAME]
     return db
 
 
 # Use LocalProxy to read the global db instance with just `db`
 db = LocalProxy(get_db)
-
 
 def get_movies_by_country(countries):
     """
@@ -78,7 +77,12 @@ def get_movies_by_country(countries):
         # Find movies matching the "countries" list, but only return the title
         # and _id. Do not include a limit in your own implementation, it is
         # included here to avoid sending 46000 documents down the wire.
-        return list(db.movies.find().limit(1))
+
+        query = {"countries":
+                     {"$in": countries}
+                     }, {"title":1}
+
+        return list(db.movies.find(*query))
 
     except Exception as e:
         return e
@@ -195,7 +199,7 @@ def build_query_sort_project(filters):
 
             # TODO: Text and Subfield Search
             # Construct a query that will search for the chosen genre.
-            query = {}
+            query = {"genres": {"$in": filters["genres"]}}
 
     return query, sort, project
 
@@ -222,6 +226,7 @@ def get_movies(filters, page, movies_per_page):
     total_num_movies = 0
     if page == 0:
         total_num_movies = db.movies.count_documents(query)
+
     """
     Ticket: Paging
 
@@ -235,7 +240,7 @@ def get_movies(filters, page, movies_per_page):
 
     # TODO: Paging
     # Use the cursor to only return the movies that belong on the current page.
-    movies = cursor.limit(movies_per_page)
+    movies = cursor.skip(movies_per_page * page).limit(movies_per_page)
 
     return (list(movies), total_num_movies)
 

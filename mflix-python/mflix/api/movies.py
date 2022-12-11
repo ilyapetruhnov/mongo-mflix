@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
 from mflix.db import get_movie, get_movies, get_movies_by_country, \
-    get_movies_faceted, add_comment, update_comment, delete_comment, \
-    get_configuration
+   get_movies_faceted, add_comment, update_comment, delete_comment, get_configuration
 
 from flask_cors import CORS
 from flask_jwt_extended import (
@@ -16,7 +15,6 @@ movies_api_v1 = Blueprint(
     'movies_api_v1', 'movies_api_v1', url_prefix='/api/v1/movies')
 
 CORS(movies_api_v1)
-
 
 @movies_api_v1.route('/', methods=['GET'])
 def api_get_movies():
